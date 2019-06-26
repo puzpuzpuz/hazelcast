@@ -224,6 +224,27 @@ public class LocalMapStatsTest extends HazelcastTestSupport {
     }
 
     @Test
+    public void testLockedEntryCount() throws Exception {
+        IMap<Integer, Integer> map = getMap();
+        for (int i = 0; i < 100; i++) {
+            map.put(i, i);
+            map.lock(i);
+        }
+        LocalMapStats localMapStats = getMapStats();
+        assertEquals(100, localMapStats.getLockedEntryCount());
+    }
+
+    @Test
+    public void testLockedEntryCount_missingEntries() throws Exception {
+        IMap<Integer, Integer> map = getMap();
+        for (int i = 0; i < 100; i++) {
+            map.lock(i);
+        }
+        LocalMapStats localMapStats = getMapStats();
+        assertEquals(100, localMapStats.getLockedEntryCount());
+    }
+
+    @Test
     public void testHitsGenerated_updatedConcurrently() throws Exception {
         final IMap<Integer, Integer> map = getMap();
         final int actionCount = 100;
