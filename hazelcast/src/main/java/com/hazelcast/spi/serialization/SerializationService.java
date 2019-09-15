@@ -39,6 +39,8 @@ public interface SerializationService {
      */
     <B extends Data> B toData(Object obj);
 
+    <B extends Data> B toLazyData(byte[] b);
+
     /**
      * Serializes an object to a {@link Data}.
      * <p/>

@@ -99,6 +99,12 @@ public class SafeBuffer implements ClientProtocolBuffer {
     }
 
     @Override
+    public void reset() {
+        byteBuffer.flip();
+        byteBuffer.clear();
+    }
+
+    @Override
     public void wrap(byte[] buffer) {
         byteBuffer = ByteBuffer.wrap(buffer);
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -152,5 +158,4 @@ public class SafeBuffer implements ClientProtocolBuffer {
 
         return new String(stringInBytes, Bits.UTF_8);
     }
-
 }

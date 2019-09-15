@@ -73,6 +73,12 @@ public class SamplingSerializationService implements InternalSerializationServic
     }
 
     @Override
+    public <B extends Data> B toLazyData(byte[] b) {
+        // no-op
+        return null;
+    }
+
+    @Override
     public <B extends Data> B toData(Object obj, PartitioningStrategy strategy) {
         B data = delegate.toData(obj, strategy);
         sampleObject(obj, data == null ? null : data.toByteArray());

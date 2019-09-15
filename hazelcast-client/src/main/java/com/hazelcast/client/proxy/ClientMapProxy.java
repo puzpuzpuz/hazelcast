@@ -20,6 +20,7 @@ import com.hazelcast.aggregation.Aggregator;
 import com.hazelcast.client.impl.clientside.ClientLockReferenceIdGenerator;
 import com.hazelcast.client.impl.clientside.ClientMessageDecoder;
 import com.hazelcast.client.impl.protocol.ClientMessage;
+import com.hazelcast.client.impl.protocol.CustomMapSetCodec;
 import com.hazelcast.client.impl.protocol.codec.MapAddEntryListenerCodec;
 import com.hazelcast.client.impl.protocol.codec.MapAddEntryListenerToKeyCodec;
 import com.hazelcast.client.impl.protocol.codec.MapAddEntryListenerToKeyWithPredicateCodec;
@@ -113,6 +114,7 @@ import com.hazelcast.core.ReadOnly;
 import com.hazelcast.internal.journal.EventJournalInitialSubscriberState;
 import com.hazelcast.internal.journal.EventJournalReader;
 import com.hazelcast.internal.serialization.InternalSerializationService;
+import com.hazelcast.internal.serialization.impl.bufferpool.ClientMessagePoolThreadLocal;
 import com.hazelcast.internal.util.SimpleCompletedFuture;
 import com.hazelcast.map.EntryBackupProcessor;
 import com.hazelcast.map.EntryProcessor;
@@ -254,6 +256,7 @@ public class ClientMapProxy<K, V> extends ClientProxy
     private ClientMessageDecoder eventJournalSubscribeResponseDecoder;
     private ClientLockReferenceIdGenerator lockReferenceIdGenerator;
     private ClientQueryCacheContext queryCacheContext;
+    private final ClientMessagePoolThreadLocal clientMessagePool = new ClientMessagePoolThreadLocal();
 
     public ClientMapProxy(String serviceName, String name, ClientContext context) {
         super(serviceName, name, context);
@@ -714,16 +717,25 @@ public class ClientMapProxy<K, V> extends ClientProxy
 
     protected void setInternal(long ttl, TimeUnit timeunit, Long maxIdle, TimeUnit maxIdleUnit, Object key, Object value) {
         Data keyData = toData(key);
-        Data valueData = toData(value);
+        Data valueData = objToLazyData(value);
         long ttlMillis = timeInMsOrOneIfResultIsZero(ttl, timeunit);
         ClientMessage request;
         if (maxIdle != null) {
             request = MapSetWithMaxIdleCodec.encodeRequest(name, keyData, valueData, getThreadId(),
                     ttlMillis, timeInMsOrOneIfResultIsZero(maxIdle, maxIdleUnit));
         } else {
-            request = MapSetCodec.encodeRequest(name, keyData, valueData, getThreadId(), ttlMillis);
+            request = CustomMapSetCodec.encodeRequest(clientMessagePool.get().takeClientMessage(),
+                    name, keyData, valueData, getThreadId(), ttlMillis);
         }
         invoke(request, keyData);
+        clientMessagePool.get().returnClientMessage(request);
+    }
+
+    private Data objToLazyData(Object obj) {
+        if (obj instanceof byte[]) {
+            return toLazyData((byte[]) obj);
+        }
+        return toData(obj);
     }
 
     @Override

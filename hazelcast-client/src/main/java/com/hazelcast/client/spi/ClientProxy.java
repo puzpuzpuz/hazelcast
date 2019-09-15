@@ -98,6 +98,10 @@ public abstract class ClientProxy implements DistributedObject {
         return getSerializationService().toData(o);
     }
 
+    protected Data toLazyData(byte[] b) {
+        return getSerializationService().toLazyData(b);
+    }
+
     protected <T> T toObject(Object data) {
         return getSerializationService().toObject(data);
     }

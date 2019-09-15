@@ -26,6 +26,8 @@ import com.hazelcast.internal.networking.OutboundFrame;
 import com.hazelcast.nio.Bits;
 import com.hazelcast.nio.Connection;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -60,7 +62,7 @@ import java.util.Arrays;
  */
 public class ClientMessage
         extends MessageFlyweight
-        implements OutboundFrame {
+        implements OutboundFrame, Closeable {
 
     /**
      * Current protocol version
@@ -115,6 +117,38 @@ public class ClientMessage
     private Connection connection;
 
     protected ClientMessage() {
+    }
+
+    @Override
+    public void close() throws IOException {
+        connection = null;
+        buffer = null;
+        operationName = null;
+    }
+
+    public void clear() {
+        writeOffset = 0;
+        connection = null;
+        operationName = null;
+        buffer.reset();
+    }
+
+    public void ensureSize(int capacity) {
+        if (capacity < 0) {
+            throw new MaxMessageSizeExceeded();
+        }
+        if (capacity <= buffer.capacity()) {
+            setDataOffset(HEADER_SIZE);
+            setFrameLength(HEADER_SIZE);
+            index(getDataOffset());
+            setPartitionId(-1);
+            return;
+        }
+        if (USE_UNSAFE) {
+            wrapForEncode(new UnsafeBuffer(new byte[capacity]), 0);
+        } else {
+            wrapForEncode(new SafeBuffer(new byte[capacity]), 0);
+        }
     }
 
     public Connection getConnection() {

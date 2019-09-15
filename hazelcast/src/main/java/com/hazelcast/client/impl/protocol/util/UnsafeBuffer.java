@@ -224,6 +224,11 @@ public class UnsafeBuffer implements ClientProtocolBuffer {
         return Bits.INT_SIZE_IN_BYTES + bytes.length;
     }
 
+    @Override
+    public void reset() {
+        throw new IllegalStateException("Not implemented");
+    }
+
     ///////////////////////////////////////////////////////////////////////////
 
     private void boundsCheck(final int index, final int length) {

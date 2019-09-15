@@ -175,4 +175,6 @@ public interface ClientProtocolBuffer {
      * @throws java.lang.IllegalArgumentException if the encoded bytes are greater than maxEncodedSize.
      */
     int putStringUtf8(int index, String value, int maxEncodedSize);
+
+    void reset();
 }

@@ -107,6 +107,11 @@ public abstract class AbstractSerializationService implements InternalSerializat
     }
 
     @Override
+    public final <B extends Data> B toLazyData(byte[] b) {
+        return toLazyData(b, globalPartitioningStrategy);
+    }
+
+    @Override
     public final <B extends Data> B toData(Object obj, PartitioningStrategy strategy) {
         if (obj == null) {
             return null;
@@ -117,6 +122,15 @@ public abstract class AbstractSerializationService implements InternalSerializat
 
         byte[] bytes = toBytes(obj, 0, true, strategy);
         return (B) new HeapData(bytes);
+    }
+
+    private <B extends Data> B toLazyData(byte[] b, PartitioningStrategy strategy) {
+        if (b == null) {
+            return null;
+        }
+
+        byte[] header = lazyHeaderBytes(b, 0, true, strategy);
+        return (B) new LazyByteArrayData(header, b);
     }
 
     @Override
@@ -155,6 +169,36 @@ public abstract class AbstractSerializationService implements InternalSerializat
             return out.toByteArray();
         } catch (Throwable e) {
             throw handleSerializeException(obj, e);
+        } finally {
+            pool.returnOutputBuffer(out);
+        }
+    }
+
+    private byte[] lazyHeaderBytes(byte[] b, int leftPadding, boolean writeHash, PartitioningStrategy strategy) {
+        return lazyHeaderBytes(b, leftPadding, writeHash, strategy, BIG_ENDIAN);
+    }
+
+    private byte[] lazyHeaderBytes(byte[] b, int leftPadding, boolean writeHash, PartitioningStrategy strategy,
+                                   ByteOrder serializerTypeIdByteOrder) {
+        checkNotNull(b);
+        checkNotNull(serializerTypeIdByteOrder);
+
+        BufferPool pool = bufferPoolThreadLocal.get();
+        BufferObjectDataOutput out = pool.takeOutputBuffer();
+        try {
+            out.position(leftPadding);
+
+            SerializerAdapter serializer = serializerFor(b);
+            if (writeHash) {
+                int partitionHash = calculatePartitionHash(b, strategy);
+                out.writeInt(partitionHash, BIG_ENDIAN);
+            }
+
+            out.writeInt(serializer.getTypeId(), serializerTypeIdByteOrder);
+            out.writeInt(b.length);
+            return out.toByteArray();
+        } catch (Throwable e) {
+            throw handleSerializeException(b, e);
         } finally {
             pool.returnOutputBuffer(out);
         }
