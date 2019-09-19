@@ -499,7 +499,7 @@ public class ClientMapProxy<K, V> extends ClientProxy
                                                         Object key, Object value) {
         try {
             Data keyData = toData(key);
-            Data valueData = toData(value);
+            Data valueData = objToLazyData(value);
             long ttlMillis = timeInMsOrOneIfResultIsZero(ttl, timeunit);
             ClientMessage request;
             if (maxIdle != null) {
