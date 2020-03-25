@@ -19,30 +19,33 @@ package com.hazelcast.client.impl.protocol.task.management;
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.protocol.codec.MCChangeWanReplicationStateCodec;
 import com.hazelcast.client.impl.protocol.codec.MCChangeWanReplicationStateCodec.RequestParameters;
-import com.hazelcast.client.impl.protocol.task.AbstractInvocationMessageTask;
+import com.hazelcast.client.impl.protocol.task.AbstractTargetMessageTask;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.management.operation.ChangeWanStateOperation;
 import com.hazelcast.internal.nio.Connection;
-import com.hazelcast.spi.impl.operationservice.InvocationBuilder;
 import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.wan.WanPublisherState;
 import com.hazelcast.wan.impl.WanReplicationService;
 
 import java.security.Permission;
+import java.util.UUID;
 
-public class ChangeWanReplicationStateMessageTask extends AbstractInvocationMessageTask<RequestParameters> {
+public class ChangeWanReplicationStateMessageTask extends AbstractTargetMessageTask<RequestParameters> {
+
     public ChangeWanReplicationStateMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
     }
 
     @Override
-    protected InvocationBuilder getInvocationBuilder(Operation op) {
-        return nodeEngine.getOperationService().createInvocationBuilder(getServiceName(),
-                op, nodeEngine.getThisAddress());
+    protected UUID getTargetUuid() {
+        return parameters.memberUuid;
     }
 
     @Override
     protected Operation prepareOperation() {
+        if (!parameters.isMemberUuidExists) {
+            throw new IllegalArgumentException("Operation was sent from unsupported version of Management Center");
+        }
         return new ChangeWanStateOperation(
                 parameters.wanReplicationName,
                 parameters.wanPublisherId,
@@ -81,7 +84,12 @@ public class ChangeWanReplicationStateMessageTask extends AbstractInvocationMess
 
     @Override
     public Object[] getParameters() {
-        return new Object[] {parameters.wanReplicationName, parameters.wanPublisherId, parameters.newState};
+        return new Object[] {
+                parameters.wanReplicationName,
+                parameters.wanPublisherId,
+                parameters.newState,
+                parameters.memberUuid
+        };
     }
 
     @Override

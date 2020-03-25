@@ -26,6 +26,7 @@ import com.hazelcast.internal.nio.Connection;
 
 import java.security.Permission;
 
+// TODO
 public class MatchMCConfigMessageTask extends AbstractCallableMessageTask<RequestParameters> {
 
     public MatchMCConfigMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
@@ -70,7 +71,7 @@ public class MatchMCConfigMessageTask extends AbstractCallableMessageTask<Reques
 
     @Override
     public Object[] getParameters() {
-        return new Object[]{parameters.eTag};
+        return new Object[]{parameters.eTag, parameters.memberUuid};
     }
 
     @Override

@@ -37,6 +37,7 @@ import static com.hazelcast.internal.util.ExceptionUtil.withTryCatch;
 /**
  * Operation to execute script on the node. The script is executed on {@link ExecutionService#MC_EXECUTOR} executor.
  */
+// TODO AbstractManagementOperation
 public class RunScriptOperation extends AbstractLocalOperation {
 
     private final String engine;

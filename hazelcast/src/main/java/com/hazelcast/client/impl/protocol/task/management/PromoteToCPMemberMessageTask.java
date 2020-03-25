@@ -19,27 +19,38 @@ package com.hazelcast.client.impl.protocol.task.management;
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.protocol.codec.MCPromoteToCPMemberCodec;
 import com.hazelcast.client.impl.protocol.codec.MCPromoteToCPMemberCodec.RequestParameters;
-import com.hazelcast.client.impl.protocol.task.AbstractAsyncMessageTask;
-import com.hazelcast.cp.CPSubsystemManagementService;
+import com.hazelcast.client.impl.protocol.task.AbstractTargetMessageTask;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.management.ManagementCenterService;
 import com.hazelcast.internal.nio.Connection;
+import com.hazelcast.spi.impl.operationservice.Operation;
 
 import java.security.Permission;
-import java.util.concurrent.CompletableFuture;
+import java.util.UUID;
 
-public class PromoteToCPMemberMessageTask extends AbstractAsyncMessageTask<RequestParameters, Void> {
+public class PromoteToCPMemberMessageTask extends AbstractTargetMessageTask<RequestParameters> {
 
     public PromoteToCPMemberMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
     }
 
     @Override
-    protected CompletableFuture<Void> processInternal() {
-        CPSubsystemManagementService cpService =
-                nodeEngine.getHazelcastInstance().getCPSubsystem().getCPSubsystemManagementService();
-        return cpService.promoteToCPMember().toCompletableFuture();
+    protected UUID getTargetUuid() {
+        return parameters.memberUuid;
     }
+
+    @Override
+    protected Operation prepareOperation() {
+        // TODO
+        return null;
+    }
+
+//    @Override
+//    protected CompletableFuture<Void> processInternal() {
+//        CPSubsystemManagementService cpService =
+//                nodeEngine.getHazelcastInstance().getCPSubsystem().getCPSubsystemManagementService();
+//        return cpService.promoteToCPMember().toCompletableFuture();
+//    }
 
     @Override
     protected RequestParameters decodeClientMessage(ClientMessage clientMessage) {
@@ -73,7 +84,7 @@ public class PromoteToCPMemberMessageTask extends AbstractAsyncMessageTask<Reque
 
     @Override
     public Object[] getParameters() {
-        return new Object[0];
+        return new Object[]{parameters.memberUuid};
     }
 
     @Override

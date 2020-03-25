@@ -19,30 +19,32 @@ package com.hazelcast.client.impl.protocol.task.management;
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.protocol.codec.MCPromoteLiteMemberCodec;
 import com.hazelcast.client.impl.protocol.codec.MCPromoteLiteMemberCodec.RequestParameters;
-import com.hazelcast.client.impl.protocol.task.AbstractInvocationMessageTask;
+import com.hazelcast.client.impl.protocol.task.AbstractTargetMessageTask;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.management.ManagementCenterService;
 import com.hazelcast.internal.management.operation.PromoteLiteMemberOperation;
 import com.hazelcast.internal.nio.Connection;
-import com.hazelcast.spi.impl.operationservice.InvocationBuilder;
 import com.hazelcast.spi.impl.operationservice.Operation;
 
 import java.security.Permission;
+import java.util.UUID;
 
-public class PromoteLiteMemberMessageTask extends AbstractInvocationMessageTask<RequestParameters> {
+public class PromoteLiteMemberMessageTask extends AbstractTargetMessageTask<RequestParameters> {
 
     public PromoteLiteMemberMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
     }
 
     @Override
-    protected InvocationBuilder getInvocationBuilder(Operation op) {
-        return nodeEngine.getOperationService().createInvocationBuilder(getServiceName(),
-                op, nodeEngine.getThisAddress());
+    protected UUID getTargetUuid() {
+        return parameters.memberUuid;
     }
 
     @Override
     protected Operation prepareOperation() {
+        if (!parameters.isMemberUuidExists) {
+            throw new IllegalArgumentException("Operation was sent from unsupported version of Management Center");
+        }
         return new PromoteLiteMemberOperation();
     }
 
@@ -78,7 +80,7 @@ public class PromoteLiteMemberMessageTask extends AbstractInvocationMessageTask<
 
     @Override
     public Object[] getParameters() {
-        return new Object[0];
+        return new Object[]{parameters.memberUuid};
     }
 
     @Override

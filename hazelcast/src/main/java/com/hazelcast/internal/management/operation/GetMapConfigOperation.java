@@ -23,6 +23,7 @@ import com.hazelcast.spi.impl.operationservice.AbstractLocalOperation;
 /**
  *  Operation to fetch Map configuration.
  */
+// TODO AbstractManagementOperation
 public class GetMapConfigOperation extends AbstractLocalOperation {
 
     private String mapName;

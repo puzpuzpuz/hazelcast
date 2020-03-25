@@ -22,6 +22,7 @@ import com.hazelcast.spi.impl.operationservice.AbstractLocalOperation;
 /**
  *  Operation for generating thread dumps.
  */
+// TODO AbstractManagementOperation
 public class ThreadDumpOperation extends AbstractLocalOperation {
 
     private boolean dumpDeadlocks;

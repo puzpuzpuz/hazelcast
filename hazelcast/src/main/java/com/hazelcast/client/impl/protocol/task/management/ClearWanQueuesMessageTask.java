@@ -19,29 +19,32 @@ package com.hazelcast.client.impl.protocol.task.management;
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.protocol.codec.MCClearWanQueuesCodec;
 import com.hazelcast.client.impl.protocol.codec.MCClearWanQueuesCodec.RequestParameters;
-import com.hazelcast.client.impl.protocol.task.AbstractInvocationMessageTask;
+import com.hazelcast.client.impl.protocol.task.AbstractTargetMessageTask;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.management.operation.ClearWanQueuesOperation;
 import com.hazelcast.internal.nio.Connection;
-import com.hazelcast.spi.impl.operationservice.InvocationBuilder;
 import com.hazelcast.spi.impl.operationservice.Operation;
 import com.hazelcast.wan.impl.WanReplicationService;
 
 import java.security.Permission;
+import java.util.UUID;
 
-public class ClearWanQueuesMessageTask extends AbstractInvocationMessageTask<RequestParameters> {
+public class ClearWanQueuesMessageTask extends AbstractTargetMessageTask<RequestParameters> {
+
     public ClearWanQueuesMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
     }
 
     @Override
-    protected InvocationBuilder getInvocationBuilder(Operation op) {
-        return nodeEngine.getOperationService().createInvocationBuilder(getServiceName(),
-                op, nodeEngine.getThisAddress());
+    protected UUID getTargetUuid() {
+        return parameters.memberUuid;
     }
 
     @Override
     protected Operation prepareOperation() {
+        if (!parameters.isMemberUuidExists) {
+            throw new IllegalArgumentException("Operation was sent from unsupported version of Management Center");
+        }
         return new ClearWanQueuesOperation(parameters.wanReplicationName, parameters.wanPublisherId);
     }
 
@@ -77,7 +80,11 @@ public class ClearWanQueuesMessageTask extends AbstractInvocationMessageTask<Req
 
     @Override
     public Object[] getParameters() {
-        return new Object[] {parameters.wanPublisherId, parameters.wanReplicationName};
+        return new Object[] {
+                parameters.wanPublisherId,
+                parameters.wanReplicationName,
+                parameters.memberUuid
+        };
     }
 
     @Override

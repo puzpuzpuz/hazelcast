@@ -28,6 +28,7 @@ import com.hazelcast.internal.nio.Connection;
 
 import java.security.Permission;
 
+// TODO
 public class GetMemberConfigMessageTask extends AbstractCallableMessageTask<RequestParameters> {
 
     public GetMemberConfigMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
@@ -73,7 +74,7 @@ public class GetMemberConfigMessageTask extends AbstractCallableMessageTask<Requ
 
     @Override
     public Object[] getParameters() {
-        return new Object[0];
+        return new Object[]{parameters.memberUuid};
     }
 
     @Override

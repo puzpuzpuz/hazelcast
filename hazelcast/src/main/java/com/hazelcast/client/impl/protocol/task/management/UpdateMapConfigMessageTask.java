@@ -19,29 +19,32 @@ package com.hazelcast.client.impl.protocol.task.management;
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.protocol.codec.MCUpdateMapConfigCodec;
 import com.hazelcast.client.impl.protocol.codec.MCUpdateMapConfigCodec.RequestParameters;
-import com.hazelcast.client.impl.protocol.task.AbstractInvocationMessageTask;
+import com.hazelcast.client.impl.protocol.task.AbstractTargetMessageTask;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.management.operation.UpdateMapConfigOperation;
 import com.hazelcast.internal.nio.Connection;
 import com.hazelcast.map.impl.MapService;
-import com.hazelcast.spi.impl.operationservice.InvocationBuilder;
 import com.hazelcast.spi.impl.operationservice.Operation;
 
 import java.security.Permission;
+import java.util.UUID;
 
-public class UpdateMapConfigMessageTask extends AbstractInvocationMessageTask<RequestParameters> {
+public class UpdateMapConfigMessageTask extends AbstractTargetMessageTask<RequestParameters> {
+
     public UpdateMapConfigMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
     }
 
     @Override
-    protected InvocationBuilder getInvocationBuilder(Operation op) {
-        return nodeEngine.getOperationService().createInvocationBuilder(getServiceName(),
-                op, nodeEngine.getThisAddress());
+    protected UUID getTargetUuid() {
+        return parameters.memberUuid;
     }
 
     @Override
     protected Operation prepareOperation() {
+        if (!parameters.isMemberUuidExists) {
+            throw new IllegalArgumentException("Operation was sent from unsupported version of Management Center");
+        }
         return new UpdateMapConfigOperation(
                 parameters.mapName,
                 parameters.timeToLiveSeconds,
@@ -91,7 +94,8 @@ public class UpdateMapConfigMessageTask extends AbstractInvocationMessageTask<Re
                 parameters.maxSize,
                 parameters.maxSizePolicy,
                 parameters.readBackupData,
-                parameters.evictionPolicy
+                parameters.evictionPolicy,
+                parameters.memberUuid
         };
     }
 

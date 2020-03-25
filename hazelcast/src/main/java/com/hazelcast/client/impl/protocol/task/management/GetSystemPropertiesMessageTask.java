@@ -32,6 +32,7 @@ import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
 
+// TODO
 public class GetSystemPropertiesMessageTask extends AbstractCallableMessageTask<RequestParameters> {
     public GetSystemPropertiesMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
@@ -77,7 +78,7 @@ public class GetSystemPropertiesMessageTask extends AbstractCallableMessageTask<
 
     @Override
     public Object[] getParameters() {
-        return new Object[0];
+        return new Object[]{parameters.memberUuid};
     }
 
     @Override

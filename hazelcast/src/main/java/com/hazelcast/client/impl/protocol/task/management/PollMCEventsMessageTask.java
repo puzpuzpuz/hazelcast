@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+// TODO
 public class PollMCEventsMessageTask extends AbstractCallableMessageTask<RequestParameters> {
 
     public PollMCEventsMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
@@ -41,7 +42,7 @@ public class PollMCEventsMessageTask extends AbstractCallableMessageTask<Request
     protected Object call() throws Exception {
         ManagementCenterService mcs = nodeEngine.getManagementCenterService();
         if (mcs == null) {
-            return Collections.<MCEventDTO>emptyList();
+            return Collections.emptyList();
         }
         List<Event> polledEvents = mcs.pollMCEvents();
         List<MCEventDTO> result = new ArrayList<>(polledEvents.size());
@@ -83,7 +84,7 @@ public class PollMCEventsMessageTask extends AbstractCallableMessageTask<Request
 
     @Override
     public Object[] getParameters() {
-        return new Object[0];
+        return new Object[]{parameters.memberUuid};
     }
 
     @Override

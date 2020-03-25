@@ -26,6 +26,7 @@ import com.hazelcast.internal.nio.Connection;
 
 import java.security.Permission;
 
+// TODO
 public class GetTimedMemberStateMessageTask extends AbstractCallableMessageTask<RequestParameters> {
 
     public GetTimedMemberStateMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
@@ -75,7 +76,7 @@ public class GetTimedMemberStateMessageTask extends AbstractCallableMessageTask<
 
     @Override
     public Object[] getParameters() {
-        return new Object[0];
+        return new Object[]{parameters.memberUuid};
     }
 
     @Override

@@ -27,6 +27,7 @@ import static com.hazelcast.internal.util.ConcurrencyUtil.CALLER_RUNS;
 import static com.hazelcast.internal.util.ExceptionUtil.peel;
 import static com.hazelcast.internal.util.ExceptionUtil.withTryCatch;
 
+// TODO AbstractManagementOperation
 public class PromoteLiteMemberOperation extends AbstractLocalOperation {
     @Override
     public void run() throws Exception {

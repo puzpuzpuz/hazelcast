@@ -24,6 +24,7 @@ import com.hazelcast.wan.impl.WanReplicationService;
  * Checking consistency of the given map for the given wan replication
  * schema and publisher
  */
+// TODO AbstractManagementOperation
 public class WanCheckConsistencyOperation extends AbstractLocalOperation {
     private String schemeName;
     private String publisherName;

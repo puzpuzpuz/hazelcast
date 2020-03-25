@@ -26,6 +26,7 @@ import com.hazelcast.internal.nio.Connection;
 
 import java.security.Permission;
 
+// TODO
 public class ShutdownMemberMessageTask extends AbstractCallableMessageTask<RequestParameters> {
     public ShutdownMemberMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
@@ -69,7 +70,7 @@ public class ShutdownMemberMessageTask extends AbstractCallableMessageTask<Reque
 
     @Override
     public Object[] getParameters() {
-        return new Object[0];
+        return new Object[]{parameters.memberUuid};
     }
 
     @Override

@@ -19,29 +19,32 @@ package com.hazelcast.client.impl.protocol.task.management;
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.protocol.codec.MCRunConsoleCommandCodec;
 import com.hazelcast.client.impl.protocol.codec.MCRunConsoleCommandCodec.RequestParameters;
-import com.hazelcast.client.impl.protocol.task.AbstractInvocationMessageTask;
+import com.hazelcast.client.impl.protocol.task.AbstractTargetMessageTask;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.management.ManagementCenterService;
 import com.hazelcast.internal.management.operation.RunConsoleCommandOperation;
 import com.hazelcast.internal.nio.Connection;
-import com.hazelcast.spi.impl.operationservice.InvocationBuilder;
 import com.hazelcast.spi.impl.operationservice.Operation;
 
 import java.security.Permission;
+import java.util.UUID;
 
-public class RunConsoleCommandMessageTask extends AbstractInvocationMessageTask<RequestParameters> {
+public class RunConsoleCommandMessageTask extends AbstractTargetMessageTask<RequestParameters> {
 
     public RunConsoleCommandMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
     }
 
     @Override
-    protected InvocationBuilder getInvocationBuilder(Operation op) {
-        return nodeEngine.getOperationService().createInvocationBuilder(getServiceName(), op, nodeEngine.getThisAddress());
+    protected UUID getTargetUuid() {
+        return parameters.memberUuid;
     }
 
     @Override
     protected Operation prepareOperation() {
+        if (!parameters.isMemberUuidExists) {
+            throw new IllegalArgumentException("Operation was sent from unsupported version of Management Center");
+        }
         return new RunConsoleCommandOperation(parameters.command, parameters.namespace);
     }
 
@@ -79,7 +82,8 @@ public class RunConsoleCommandMessageTask extends AbstractInvocationMessageTask<
     public Object[] getParameters() {
         return new Object[] {
                 parameters.command,
-                parameters.namespace
+                parameters.namespace,
+                parameters.memberUuid
         };
     }
 

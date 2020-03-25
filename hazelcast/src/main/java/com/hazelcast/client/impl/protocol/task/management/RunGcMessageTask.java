@@ -28,6 +28,7 @@ import java.security.Permission;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+// TODO
 public class RunGcMessageTask extends AbstractCallableMessageTask<RequestParameters> {
     public RunGcMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
@@ -72,7 +73,7 @@ public class RunGcMessageTask extends AbstractCallableMessageTask<RequestParamet
 
     @Override
     public Object[] getParameters() {
-        return new Object[0];
+        return new Object[]{parameters.memberUuid};
     }
 
     @Override

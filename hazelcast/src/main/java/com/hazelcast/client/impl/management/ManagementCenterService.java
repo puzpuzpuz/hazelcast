@@ -163,22 +163,15 @@ public class ManagementCenterService {
     }
 
     private CompletableFuture<MCMapConfig> doGetMapConfig(Member member, String map) {
-        ClientInvocation invocation;
         if (member == null) {
-            // TODO pick up any member
-            invocation = new ClientInvocation(
-                    client,
-                    MCGetMapConfigCodec.encodeRequest(map, null),
-                    map
-            );
-        } else {
-            invocation = new ClientInvocation(
-                    client,
-                    MCGetMapConfigCodec.encodeRequest(map, member.getUuid()),
-                    map,
-                    member.getUuid()
-            );
+            member = client.getClientClusterService().getMasterMember();
         }
+        ClientInvocation invocation = new ClientInvocation(
+                client,
+                MCGetMapConfigCodec.encodeRequest(map, member.getUuid()),
+                map,
+                member.getUuid()
+        );
 
         return new ClientDelegatingFuture<>(
                 invocation.invoke(),
@@ -584,7 +577,8 @@ public class ManagementCenterService {
         ClientInvocation invocation = new ClientInvocation(
                 client,
                 MCChangeWanReplicationStateCodec.encodeRequest(
-                        wanReplicationName,wanPublisherId,
+                        wanReplicationName,
+                        wanPublisherId,
                         newState.getId(),
                         member.getUuid()
                 ),

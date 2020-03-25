@@ -24,6 +24,7 @@ import com.hazelcast.wan.impl.WanReplicationService;
 /**
  * Stop, pause or resume WAN replication for the given {@code wanReplicationName} and {@code wanPublisherId}.
  */
+// TODO AbstractManagementOperation
 public class ChangeWanStateOperation extends AbstractLocalOperation {
 
     private String wanReplicationName;

@@ -19,31 +19,34 @@ package com.hazelcast.client.impl.protocol.task.management;
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.protocol.codec.MCGetMapConfigCodec;
 import com.hazelcast.client.impl.protocol.codec.MCGetMapConfigCodec.RequestParameters;
-import com.hazelcast.client.impl.protocol.task.AbstractInvocationMessageTask;
+import com.hazelcast.client.impl.protocol.task.AbstractTargetMessageTask;
 import com.hazelcast.config.EvictionConfig;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.config.MapConfigReadOnly;
 import com.hazelcast.internal.management.operation.GetMapConfigOperation;
 import com.hazelcast.internal.nio.Connection;
 import com.hazelcast.map.impl.MapService;
-import com.hazelcast.spi.impl.operationservice.InvocationBuilder;
 import com.hazelcast.spi.impl.operationservice.Operation;
 
 import java.security.Permission;
+import java.util.UUID;
 
-public class GetMapConfigMessageTask extends AbstractInvocationMessageTask<RequestParameters> {
+public class GetMapConfigMessageTask extends AbstractTargetMessageTask<RequestParameters> {
+
     public GetMapConfigMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
     }
 
     @Override
-    protected InvocationBuilder getInvocationBuilder(Operation op) {
-        return nodeEngine.getOperationService().createInvocationBuilder(getServiceName(),
-                op, nodeEngine.getThisAddress());
+    protected UUID getTargetUuid() {
+        return parameters.memberUuid;
     }
 
     @Override
     protected Operation prepareOperation() {
+        if (!parameters.isMemberUuidExists) {
+            throw new IllegalArgumentException("Operation was sent from unsupported version of Management Center");
+        }
         return new GetMapConfigOperation(parameters.mapName);
     }
 
@@ -97,7 +100,7 @@ public class GetMapConfigMessageTask extends AbstractInvocationMessageTask<Reque
 
     @Override
     public Object[] getParameters() {
-        return new Object[]{parameters.mapName};
+        return new Object[]{parameters.mapName, parameters.memberUuid};
     }
 
     @Override

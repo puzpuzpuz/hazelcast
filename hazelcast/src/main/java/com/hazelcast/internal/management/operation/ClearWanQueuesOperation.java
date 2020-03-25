@@ -23,6 +23,7 @@ import com.hazelcast.wan.impl.WanReplicationService;
 /**
  * Clear WAN replication queues for the given wan replication schema and publisher
  */
+// TODO AbstractManagementOperation
 public class ClearWanQueuesOperation extends AbstractLocalOperation {
 
     private String schemeName;

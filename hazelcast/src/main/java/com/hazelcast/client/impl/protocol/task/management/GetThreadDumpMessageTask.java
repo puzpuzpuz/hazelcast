@@ -19,29 +19,32 @@ package com.hazelcast.client.impl.protocol.task.management;
 import com.hazelcast.client.impl.protocol.ClientMessage;
 import com.hazelcast.client.impl.protocol.codec.MCGetThreadDumpCodec;
 import com.hazelcast.client.impl.protocol.codec.MCGetThreadDumpCodec.RequestParameters;
-import com.hazelcast.client.impl.protocol.task.AbstractInvocationMessageTask;
+import com.hazelcast.client.impl.protocol.task.AbstractTargetMessageTask;
 import com.hazelcast.instance.impl.Node;
 import com.hazelcast.internal.management.ManagementCenterService;
 import com.hazelcast.internal.management.operation.ThreadDumpOperation;
 import com.hazelcast.internal.nio.Connection;
-import com.hazelcast.spi.impl.operationservice.InvocationBuilder;
 import com.hazelcast.spi.impl.operationservice.Operation;
 
 import java.security.Permission;
+import java.util.UUID;
 
-public class GetThreadDumpMessageTask extends AbstractInvocationMessageTask<RequestParameters> {
+public class GetThreadDumpMessageTask extends AbstractTargetMessageTask<RequestParameters> {
+
     public GetThreadDumpMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
         super(clientMessage, node, connection);
     }
 
     @Override
-    protected InvocationBuilder getInvocationBuilder(Operation op) {
-        return nodeEngine.getOperationService().createInvocationBuilder(getServiceName(),
-                op, nodeEngine.getThisAddress());
+    protected UUID getTargetUuid() {
+        return parameters.memberUuid;
     }
 
     @Override
     protected Operation prepareOperation() {
+        if (!parameters.isMemberUuidExists) {
+            throw new IllegalArgumentException("Operation was sent from unsupported version of Management Center");
+        }
         return new ThreadDumpOperation(parameters.dumpDeadLocks);
     }
 
@@ -77,7 +80,7 @@ public class GetThreadDumpMessageTask extends AbstractInvocationMessageTask<Requ
 
     @Override
     public Object[] getParameters() {
-        return new Object[]{parameters.dumpDeadLocks};
+        return new Object[]{parameters.dumpDeadLocks, parameters.memberUuid};
     }
 
     @Override

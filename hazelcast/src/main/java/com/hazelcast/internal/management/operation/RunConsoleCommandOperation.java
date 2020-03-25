@@ -31,8 +31,9 @@ import static com.hazelcast.internal.util.ExceptionUtil.withTryCatch;
 import static com.hazelcast.internal.util.StringUtil.isNullOrEmpty;
 
 /**
- *  Operation to run console command. The command is executed on {@link ExecutionService#MC_EXECUTOR} executor.
+ * Operation to run console command. The command is executed on {@link ExecutionService#MC_EXECUTOR} executor.
  */
+// TODO AbstractManagementOperation
 public class RunConsoleCommandOperation extends AbstractLocalOperation {
 
     private final String command;

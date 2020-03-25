@@ -28,6 +28,7 @@ import com.hazelcast.internal.nio.Connection;
 
 import java.security.Permission;
 
+// TODO
 public class ApplyMCConfigMessageTask extends AbstractCallableMessageTask<RequestParameters> {
 
     public ApplyMCConfigMessageTask(ClientMessage clientMessage, Node node, Connection connection) {
@@ -83,7 +84,8 @@ public class ApplyMCConfigMessageTask extends AbstractCallableMessageTask<Reques
         return new Object[] {
                 parameters.eTag,
                 parameters.clientBwListMode,
-                parameters.clientBwListEntries
+                parameters.clientBwListEntries,
+                parameters.memberUuid
         };
     }
 
